@@ -24,11 +24,22 @@ const nodeToObject = (node, filterText) => {
   const props = Object.entries(
     Object.getOwnPropertyDescriptors(node.__proto__)
   );
-  const blacklist = ['parent', 'children', 'removed', 'textTruncation'];
+  const blacklist = [
+    'parent',
+    'children',
+    'removed',
+    'textTruncation',
+    'horizontalPadding',
+  ];
   let obj: any = { id: node.id, type: node.type, children: undefined };
   if (node.parent) obj.parent = { id: node.parent.id, type: node.type };
   for (const [name, prop] of props) {
-    if (prop.get && blacklist.indexOf(name) < 0) {
+    const isVariant = node.parent && node.parent.type === 'COMPONENT_SET';
+    if (
+      prop.get &&
+      blacklist.indexOf(name) < 0 &&
+      !(isVariant && name === 'componentPropertyDefinitions')
+    ) {
       obj[name] = prop.get.call(node);
       if (typeof obj[name] === 'symbol') obj[name] = 'Mixed';
     }
